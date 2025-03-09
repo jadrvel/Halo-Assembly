@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows;
+using System.IO;
 using Assembly.Metro.Controls.PageTemplates.Games;
 using Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData;
 using Blamite.Blam.Shaders;
@@ -9,6 +9,8 @@ using Blamite.IO;
 using Blamite.Plugins;
 using Blamite.Util;
 using System.Windows.Media;
+using Blamite.Blam;
+using Blamite.Serialization;
 
 namespace Assembly.Helpers.Plugins
 {
@@ -57,7 +59,19 @@ namespace Assembly.Helpers.Plugins
 		public ObservableCollection<MetaField> Values { get; private set; }
 		public ObservableCollection<TagBlockData> TagBlocks { get; private set; }
 
-		public bool EnterPlugin(int baseSize)
+		public static string GetPluginPath(ITag tag, EngineDescription buildInfo)
+		{
+			string groupName = VariousFunctions.SterilizeTagGroupName(CharConstant.ToString(tag.Group.Magic)).Trim();
+			string root = Path.Combine(VariousFunctions.GetApplicationLocation(), "Plugins");
+			string pluginPath = Path.Combine(root, buildInfo.Settings.GetSetting<string>("plugins"), $"{groupName}.xml");
+
+			if (!File.Exists(pluginPath) && buildInfo.Settings.PathExists("fallbackPlugins"))
+				pluginPath = Path.Combine(root, buildInfo.Settings.GetSetting<string>("fallbackPlugins"), $"{groupName}.xml");
+
+			return pluginPath;
+		}
+
+        public bool EnterPlugin(int baseSize)
 		{
 			return true;
 		}

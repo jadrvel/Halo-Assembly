@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml;
 using Assembly.Helpers;
+using Assembly.Helpers.Plugins;
 using Assembly.Metro.Controls.PageTemplates.Games.Components;
 using Assembly.Metro.Controls.PageTemplates.Games.Components.Editors;
 using Assembly.Metro.Dialogs;
@@ -889,13 +890,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games
 						continue;
 
 					// Get the plugin path
-					var groupName = VariousFunctions.SterilizeTagGroupName(CharConstant.ToString(currentTag.Group.Magic)).Trim();
-					var pluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-						_buildInfo.Settings.GetSetting<string>("plugins"), groupName);
-
-					if (!File.Exists(pluginPath) && _buildInfo.Settings.PathExists("fallbackPlugins"))
-						pluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-							_buildInfo.Settings.GetSetting<string>("fallbackPlugins"), groupName);
+					var pluginPath = AssemblyPluginVisitor.GetPluginPath(currentTag, _buildInfo);
 
 					if (pluginPath == null || !File.Exists(pluginPath))
 					{
@@ -2408,20 +2403,14 @@ namespace Assembly.Metro.Controls.PageTemplates.Games
 				MetroMessageBox.MessageBoxButtons.OkCancel) != MetroMessageBox.MessageBoxResult.OK)
 				return;
 
-			//close the tag if its currently open in a tab
+			// Close the tag if its currently open in a tab
 			TabItem tabb = contentTabs.Items.Cast<TabItem>()
 				.FirstOrDefault(ct => ct.Tag != null && ((TagEntry)ct.Tag).RawTag == tag.RawTag);
 			if (tabb != null)
 				ExternalTabClose(tabb, false);
 
-			//get the plugin to obtain the size of the base data
-			var groupName = VariousFunctions.SterilizeTagGroupName(CharConstant.ToString(tag.RawTag.Group.Magic)).Trim();
-			var pluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-				_buildInfo.Settings.GetSetting<string>("plugins"), groupName);
-
-			if (!File.Exists(pluginPath) && _buildInfo.Settings.PathExists("fallbackPlugins"))
-				pluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-					_buildInfo.Settings.GetSetting<string>("fallbackPlugins"), groupName);
+			// Get the plugin to obtain the size of the base data
+			var pluginPath = AssemblyPluginVisitor.GetPluginPath(tag.RawTag, _buildInfo);
 
 			if (pluginPath == null || !File.Exists(pluginPath))
 			{

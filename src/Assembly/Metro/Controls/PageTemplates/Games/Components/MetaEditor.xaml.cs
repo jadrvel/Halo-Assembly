@@ -115,13 +115,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components
 		public void RefreshEditor(MetaReader.LoadType type)
 		{
 			// Load Plugin Path
-			string groupName = VariousFunctions.SterilizeTagGroupName(CharConstant.ToString(_tag.RawTag.Group.Magic)).Trim();
-			_pluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-				_buildInfo.Settings.GetSetting<string>("plugins"), groupName);
-
-			if (!File.Exists(_pluginPath) && _buildInfo.Settings.PathExists("fallbackPlugins"))
-				_pluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-					_buildInfo.Settings.GetSetting<string>("fallbackPlugins"), groupName);
+			_pluginPath = AssemblyPluginVisitor.GetPluginPath(_tag.RawTag, _buildInfo);
 
 			if (_pluginPath == null || !File.Exists(_pluginPath))
 			{

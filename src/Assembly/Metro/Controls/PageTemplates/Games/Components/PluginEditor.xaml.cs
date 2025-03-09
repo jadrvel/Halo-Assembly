@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using Assembly.Helpers;
 using Assembly.Helpers.CodeCompletion.XML;
+using Assembly.Helpers.Plugins;
 using Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData;
 using Assembly.SyntaxHighlighting;
 using Blamite.Serialization;
@@ -42,13 +43,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components
 
 			App.AssemblyStorage.AssemblySettings.PropertyChanged += Settings_SettingsChanged;
 
-			string groupName = VariousFunctions.SterilizeTagGroupName(CharConstant.ToString(tag.RawTag.Group.Magic)).Trim();
-			_pluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-					buildInfo.Settings.GetSetting<string>("plugins"), groupName.Trim());
-
-			if (buildInfo.Settings.PathExists("fallbackPlugins"))
-				_fallbackPluginPath = string.Format("{0}\\{1}\\{2}.xml", VariousFunctions.GetApplicationLocation() + @"Plugins",
-					buildInfo.Settings.GetSetting<string>("fallbackPlugins"), groupName.Trim());
+			_pluginPath = AssemblyPluginVisitor.GetPluginPath(tag.RawTag, buildInfo);
 			LoadPlugin();
 		}
 
