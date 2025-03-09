@@ -72,83 +72,79 @@ namespace Assembly.Helpers.Plugins
 				AddValue(new CommentData(title, text, pluginLine));
 		}
 
+		#region MultiData
 		public void VisitPoint2(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Point2Data(name, offset, 0, "point2", 0, 0, pluginLine, tooltip));
+				AddValue(new Point2Data(name, offset, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitPoint3(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Point3Data(name, offset, 0, "point3", 0, 0, 0, pluginLine, tooltip));
+				AddValue(new Point3Data(name, offset, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitVector2(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Vector2Data(name, offset, 0, "vector2", 0, 0, pluginLine, tooltip));
+				AddValue(new Vector2Data(name, offset, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitVector3(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Vector3Data(name, offset, 0, "vector3", 0, 0, 0, pluginLine, tooltip));
+				AddValue(new Vector3Data(name, offset, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitVector4(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Vector4Data(name, offset, 0, "quaternion", 0, 0, 0, 0, pluginLine, tooltip));
+				AddValue(new Vector4Data(name, offset, 0, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitDegree2(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Degree2Data(name, offset, 0, "degree2", 0, 0, pluginLine, tooltip));
+				AddValue(new Degree2Data(name, offset, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitDegree3(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Degree3Data(name, offset, 0, "degree3", 0, 0, 0, pluginLine, tooltip));
+				AddValue(new Degree3Data(name, offset, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitPlane2(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Plane2Data(name, offset, 0, "plane2", 0, 0, 0, pluginLine, tooltip));
+				AddValue(new Plane2Data(name, offset, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitPlane3(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Plane3Data(name, offset, 0, "plane3", 0, 0, 0, 0, pluginLine, tooltip));
+				AddValue(new Plane3Data(name, offset, 0, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitRect16(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new RectangleData(name, offset, 0, "rectangle16", 0, 0, 0, 0, pluginLine, tooltip));
+				AddValue(new RectangleData(name, offset, 0, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitQuat16(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Quaternion16Data(name, offset, 0, "quaternion16", 0, 0, 0, 0, pluginLine, tooltip));
+				AddValue(new Quaternion16Data(name, offset, 0, 0, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitPoint16(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Point16Data(name, offset, 0, "point16", 0, 0, pluginLine, tooltip));
+				AddValue(new Point16Data(name, offset, 0, 0, 0, pluginLine, tooltip));
 		}
-
-		public void VisitDegree(string name, uint offset, bool visible, uint pluginLine, string tooltip)
-		{
-			if (visible || _showInvisibles)
-				AddValue(new DegreeData(name, offset, 0, "degree", 0, pluginLine, tooltip));
-		}
+		#endregion
 
 		public void VisitColorInt(string name, uint offset, bool visible, bool alpha, uint pluginLine, string tooltip)
 		{
@@ -217,8 +213,8 @@ namespace Assembly.Helpers.Plugins
 				return;
 			for (var i = 0; i < languages; i++)
 			{
-				AddValue(new Uint16Data("Language " + i + " " + name + " Index", (uint)(offset + i * 4), 0, "uint16", 0, pluginLine, tooltip));
-				AddValue(new Uint16Data("Language " + i + " " + name + " Count", (uint)(offset + i * 4 + 2), 0, "uint16", 0, pluginLine, tooltip));
+				AddValue(new Uint16Data("Language " + i + " " + name + " Index", (uint)(offset + i * 4), 0, 0, pluginLine, tooltip));
+				AddValue(new Uint16Data("Language " + i + " " + name + " Count", (uint)(offset + i * 4 + 2), 0, 0, pluginLine, tooltip));
 			}
 		}
 
@@ -239,19 +235,19 @@ namespace Assembly.Helpers.Plugins
 		public void VisitRangeInt16(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new RangeInt16Data(name, offset, 0, "range16", 0, 0, pluginLine, tooltip));
+				AddValue(new RangeInt16Data(name, offset, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitRangeFloat32(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new RangeFloat32Data(name, offset, 0, "rangeF", 0, 0, pluginLine, tooltip));
+				AddValue(new RangeFloat32Data(name, offset, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitRangeDegree(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new RangeDegreeData(name, offset, 0, "rangeD", 0, 0, pluginLine, tooltip));
+				AddValue(new RangeDegreeData(name, offset, 0, 0, 0, pluginLine, tooltip));
 		}
 
 		#endregion
@@ -381,68 +377,73 @@ namespace Assembly.Helpers.Plugins
 
 		#endregion
 
-		#region Integers
+		#region Numbers
 
 		public void VisitUInt8(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Uint8Data(name, offset, 0, "uint8", 0, pluginLine, tooltip));
+				AddValue(new Uint8Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitInt8(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Int8Data(name, offset, 0, "int8", 0, pluginLine, tooltip));
+				AddValue(new Int8Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitUInt16(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Uint16Data(name, offset, 0, "uint16", 0, pluginLine, tooltip));
+				AddValue(new Uint16Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitInt16(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Int16Data(name, offset, 0, "int16", 0, pluginLine, tooltip));
+				AddValue(new Int16Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitUInt32(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Uint32Data(name, offset, 0, "uint32", 0, pluginLine, tooltip));
+				AddValue(new Uint32Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitInt32(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Int32Data(name, offset, 0, "int32", 0, pluginLine, tooltip));
+				AddValue(new Int32Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitUInt64(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Uint64Data(name, offset, 0, "uint64", 0, pluginLine, tooltip));
+				AddValue(new Uint64Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitInt64(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Int64Data(name, offset, 0, "int64", 0, pluginLine, tooltip));
+				AddValue(new Int64Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitFloat32(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Float32Data(name, offset, 0, "float32", 0, pluginLine, tooltip));
+				AddValue(new Float32Data(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
 		public void VisitUndefined(string name, uint offset, bool visible, uint pluginLine, string tooltip)
 		{
 			if (visible || _showInvisibles)
-				AddValue(new Float32Data(name, offset, 0, "undefined", 0, pluginLine, tooltip));
+				AddValue(new UndefinedData(name, offset, 0, 0, pluginLine, tooltip));
 		}
 
+		public void VisitDegree(string name, uint offset, bool visible, uint pluginLine, string tooltip)
+		{
+			if (visible || _showInvisibles)
+				AddValue(new DegreeData(name, offset, 0, 0, pluginLine, tooltip));
+		}
 		#endregion
 
 		#region Revisions

@@ -78,7 +78,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public static float ByteToFloat(byte value)
 		{
-			//rounding doesnt work great for 128 so force it to 0.5
+			//rounding doesn't work great for 128 so force it to 0.5
 			return value == 128 ? 0.5f : value / 255f;
 		}
 
@@ -122,7 +122,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public override object GetAsJson()
 		{
-			Dictionary<string, object> dict = new Dictionary<string, object>();
+			var dict = new Dictionary<string, object>();
 			if (DataType == "color32")
 			{
 				dict["Type"] = "integer";

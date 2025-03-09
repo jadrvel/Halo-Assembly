@@ -9,26 +9,16 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// <typeparam name="T">The type of number to hold.</typeparam>
 	public abstract class RangeNumberData<T> : ValueField
 	{
-		private string _type;
 		private T _min, _max;
 
-		public RangeNumberData(string name, uint offset, long address, string type, T min, T max, uint pluginLine, string tooltip)
+		protected RangeNumberData(string name, uint offset, long address, T min, T max, uint pluginLine, string tooltip)
 			: base(name, offset, address, pluginLine, tooltip)
 		{
-			_type = type;
 			_min = min;
 			_max = max;
 		}
 
-		public string Type
-		{
-			get { return _type; }
-			set
-			{
-				_type = value;
-				NotifyPropertyChanged("Type");
-			}
-		}
+		public abstract string Type { get; }
 
 		public T Min
 		{
@@ -57,9 +47,11 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public override object GetAsJson()
 		{
-			Dictionary<string, object> dict = new Dictionary<string, object>();
-			dict["Min"] = Min;
-			dict["Max"] = Max;
+			var dict = new Dictionary<string, object> 
+			{
+				["Min"] = Min,
+				["Max"] = Max
+			};
 
 			return dict;
 		}
@@ -70,19 +62,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class RangeInt16Data : RangeNumberData<short>
 	{
-		public RangeInt16Data(string name, uint offset, long address, string type, short min, short max, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, min, max, pluginLine, tooltip)
+		public RangeInt16Data(string name, uint offset, long address, short min, short max, uint pluginLine, string tooltip)
+			: base(name, offset, address, min, max, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "range16";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitRangeInt16(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new RangeInt16Data(Name, Offset, FieldAddress, Type, Min, Max, PluginLine, ToolTip);
+			return new RangeInt16Data(Name, Offset, FieldAddress, Min, Max, PluginLine, ToolTip);
 		}
 	}
 
@@ -91,19 +85,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class RangeFloat32Data : RangeNumberData<float>
 	{
-		public RangeFloat32Data(string name, uint offset, long address, string type, float min, float max, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, min, max, pluginLine, tooltip)
+		public RangeFloat32Data(string name, uint offset, long address, float min, float max, uint pluginLine, string tooltip)
+			: base(name, offset, address, min, max, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "rangeF";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitRangeFloat32(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new RangeFloat32Data(Name, Offset, FieldAddress, Type, Min, Max, PluginLine, ToolTip);
+			return new RangeFloat32Data(Name, Offset, FieldAddress, Min, Max, PluginLine, ToolTip);
 		}
 	}
 
@@ -112,18 +108,18 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class RangeDegreeData : RangeNumberData<float>
 	{
-		private string _type;
 		private float _radianmin, _radianmax;
 
-		public RangeDegreeData(string name, uint offset, long address, string type, float min, float max, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, min, max, pluginLine, tooltip)
+		public RangeDegreeData(string name, uint offset, long address, float min, float max, uint pluginLine, string tooltip)
+			: base(name, offset, address, min, max, pluginLine, tooltip)
 		{
-			_type = type;
 			_radianmin = min;
 			_radianmax = max;
 		}
 
-		public new float Min
+		public override string Type => "rangeD";
+
+        public new float Min
 		{
 			get { return FromRadian(_radianmin); }
 			set
@@ -172,7 +168,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public override MetaField CloneValue()
 		{
-			return new RangeDegreeData(Name, Offset, FieldAddress, Type, RadianMin, RadianMax, PluginLine, ToolTip);
+			return new RangeDegreeData(Name, Offset, FieldAddress, RadianMin, RadianMax, PluginLine, ToolTip);
 		}
 
 		public override string AsString()
@@ -182,9 +178,10 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public override object GetAsJson()
 		{
-			Dictionary<string, object> dict = new Dictionary<string, object>();
-			dict["Min"] = Min;
-			dict["Max"] = Max;
+			var dict = new Dictionary<string, object> {
+				["Min"] = Min,
+				["Max"] = Max
+			};
 
 			return dict;
 		}

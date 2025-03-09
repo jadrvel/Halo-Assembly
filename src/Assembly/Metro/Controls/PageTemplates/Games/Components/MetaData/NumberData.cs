@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
+﻿namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 {
 	/// <summary>
 	///     Base class for number data.
@@ -8,25 +6,15 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// <typeparam name="T">The type of number to hold.</typeparam>
 	public abstract class NumberData<T> : ValueField
 	{
-		private string _type;
 		private T _value;
 
-		public NumberData(string name, uint offset, long address, string type, T value, uint pluginLine, string tooltip)
+		protected NumberData(string name, uint offset, long address, T value, uint pluginLine, string tooltip)
 			: base(name, offset, address, pluginLine, tooltip)
 		{
-			_type = type;
 			_value = value;
 		}
 
-		public string Type
-		{
-			get { return _type; }
-			set
-			{
-				_type = value;
-				NotifyPropertyChanged("Type");
-			}
-		}
+		public abstract string Type { get; }
 
 		public T Value
 		{
@@ -54,10 +42,12 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Uint8Data : NumberData<byte>
 	{
-		public Uint8Data(string name, uint offset, long address, string type, byte value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Uint8Data(string name, uint offset, long address, byte value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
+
+		public override string Type => "uint8";
 
 		public override void Accept(IMetaFieldVisitor visitor)
 		{
@@ -66,7 +56,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public override MetaField CloneValue()
 		{
-			return new Uint8Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Uint8Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -75,19 +65,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Int8Data : NumberData<sbyte>
 	{
-		public Int8Data(string name, uint offset, long address, string type, sbyte value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Int8Data(string name, uint offset, long address, sbyte value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "int8";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitInt8(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Int8Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Int8Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -96,19 +88,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Uint16Data : NumberData<ushort>
 	{
-		public Uint16Data(string name, uint offset, long address, string type, ushort value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Uint16Data(string name, uint offset, long address, ushort value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "uint16";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitUint16(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Uint16Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Uint16Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -117,19 +111,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Int16Data : NumberData<short>
 	{
-		public Int16Data(string name, uint offset, long address, string type, short value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Int16Data(string name, uint offset, long address, short value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "int16";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitInt16(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Int16Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Int16Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -138,19 +134,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Uint32Data : NumberData<uint>
 	{
-		public Uint32Data(string name, uint offset, long address, string type, uint value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Uint32Data(string name, uint offset, long address, uint value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "uint32";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitUint32(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Uint32Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Uint32Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -159,19 +157,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Int32Data : NumberData<int>
 	{
-		public Int32Data(string name, uint offset, long address, string type, int value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Int32Data(string name, uint offset, long address, int value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "int32";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitInt32(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Int32Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Int32Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -180,19 +180,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Uint64Data : NumberData<ulong>
 	{
-		public Uint64Data(string name, uint offset, long address, string type, ulong value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Uint64Data(string name, uint offset, long address, ulong value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "uint64";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitUint64(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Uint64Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Uint64Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -201,19 +203,21 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Int64Data : NumberData<long>
 	{
-		public Int64Data(string name, uint offset, long address, string type, long value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Int64Data(string name, uint offset, long address, long value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "int64";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitInt64(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Int64Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Int64Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
 
@@ -222,21 +226,38 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	/// </summary>
 	public class Float32Data : NumberData<float>
 	{
-		public Float32Data(string name, uint offset, long address, string type, float value, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, value, pluginLine, tooltip)
+		public Float32Data(string name, uint offset, long address, float value, uint pluginLine, string tooltip)
+			: base(name, offset, address, value, pluginLine, tooltip)
 		{
 		}
 
-		public override void Accept(IMetaFieldVisitor visitor)
+		public override string Type => "float32";
+
+        public override void Accept(IMetaFieldVisitor visitor)
 		{
 			visitor.VisitFloat32(this);
 		}
 
 		public override MetaField CloneValue()
 		{
-			return new Float32Data(Name, Offset, FieldAddress, Type, Value, PluginLine, ToolTip);
+			return new Float32Data(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
 		}
 	}
+
+	public class UndefinedData : Float32Data 
+	{
+		public UndefinedData(string name, uint offset, long address, float value, uint pluginLine, string tooltip) 
+			: base(name, offset, address, value, pluginLine, tooltip) 
+		{
+		}
+
+        public override string Type => "undefined";
+
+		public override MetaField CloneValue()
+		{
+			return new UndefinedData(Name, Offset, FieldAddress, Value, PluginLine, ToolTip);
+		}
+    }
 
 	/// <summary>
 	///     32-bit floating-point number, converted from radians to degrees
@@ -245,13 +266,15 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 	{
 		private float _radian;
 
-		public DegreeData(string name, uint offset, long address, string type, float radian, uint pluginLine, string tooltip)
-			: base(name, offset, address, type, radian, pluginLine, tooltip)
+		public DegreeData(string name, uint offset, long address, float radian, uint pluginLine, string tooltip)
+			: base(name, offset, address, radian, pluginLine, tooltip)
 		{
 			_radian = radian;
 		}
 
-		public new float Value
+		public override string Type => "degree";
+
+        public new float Value
 		{
 			get { return FromRadian(_radian); }
 			set
@@ -279,7 +302,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public override MetaField CloneValue()
 		{
-			return new DegreeData(Name, Offset, FieldAddress, Type, _radian, PluginLine, ToolTip);
+			return new DegreeData(Name, Offset, FieldAddress, _radian, PluginLine, ToolTip);
 		}
 
 		public override string AsString()
