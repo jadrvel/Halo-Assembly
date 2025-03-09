@@ -26,7 +26,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 		private readonly StructureLayout _tagRefLayout;
 		private readonly LoadType _type;
 		private IReader _reader;
-		private bool _shouldShowDatarefNotice;
+		private readonly bool _shouldShowDataRefNotice;
 
 		public MetaReader(IStreamManager streamManager, long baseOffset, ICacheFile cache, EngineDescription buildInfo,
 			LoadType type, FieldChangeSet ignore, FileSegmentGroup segmentGroup)
@@ -43,7 +43,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			_tagRefLayout = buildInfo.Layouts.GetLayout("tag reference");
 			_dataRefLayout = buildInfo.Layouts.GetLayout("data reference");
 
-			_shouldShowDatarefNotice = App.AssemblyStorage.AssemblySettings.PluginsShowDataRefNotice;
+			_shouldShowDataRefNotice = App.AssemblyStorage.AssemblySettings.PluginsShowDataRefNotice;
 		}
 
 		public long BaseOffset { get; set; }
@@ -120,6 +120,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			field.SelectedValue = selected;
 		}
 
+		#region Numbers
 		public void VisitUint8(Uint8Data field)
 		{
 			SeekToOffset(field.Offset);
@@ -168,6 +169,13 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			field.Value = _reader.ReadInt64();
 		}
 
+		public void VisitFloat32(Float32Data field)
+		{
+			SeekToOffset(field.Offset);
+			field.Value = _reader.ReadFloat();
+		}
+		#endregion
+
 		public void VisitColourInt(ColorData field)
 		{
 			SeekToOffset(field.Offset);
@@ -195,7 +203,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			else
 			{
 				Color scColor = Color.FromScRgb(field.Alpha ? _reader.ReadFloat() : 1, _reader.ReadFloat(), _reader.ReadFloat(), _reader.ReadFloat());
-				//Color.ToString() doesnt display hex code when using scrgb, so gotta do this
+				//Color.ToString() doesn't display hex code when using scrgb, so gotta do this
 				field.Value = Color.FromArgb(scColor.A, scColor.R, scColor.G, scColor.B);
 			}
 		}
@@ -249,7 +257,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 			long expanded = _cache.PointerExpander.Expand(pointer);
 
-			field.ShowingNotice = length > field.NoticeThreshold && _shouldShowDatarefNotice;
+			field.ShowingNotice = length > field.NoticeThreshold && _shouldShowDataRefNotice;
 
 			if (length > 0 && _srcSegmentGroup.ContainsBlockPointer(expanded, (uint)length))
 			{
@@ -293,7 +301,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			if (index.IsValid && index.Index < field.Tags.Entries.Count)
 			{
 				tag = field.Tags.Entries[index.Index];
-				if (tag == null || tag.RawTag == null || tag.RawTag.Index != index)
+				if (tag?.RawTag == null || tag?.RawTag.Index != index)
 					tag = null;
 			}
 
@@ -309,12 +317,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			}
 		}
 
-		public void VisitFloat32(Float32Data field)
-		{
-			SeekToOffset(field.Offset);
-			field.Value = _reader.ReadFloat();
-		}
-
+		#region MultiData
 		public void VisitPoint2(Vector2Data field)
 		{
 			SeekToOffset(field.Offset);
@@ -353,7 +356,6 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			field.C = _reader.ReadFloat();
 			field.D = _reader.ReadFloat();
 		}
-
 
 		public void VisitPoint2(Point2Data field)
 		{
@@ -408,23 +410,6 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			field.RadianC = _reader.ReadFloat();
 		}
 
-		public void VisitPlane2(Vector3Data field)
-		{
-			SeekToOffset(field.Offset);
-			field.A = _reader.ReadFloat();
-			field.B = _reader.ReadFloat();
-			field.C = _reader.ReadFloat();
-		}
-
-		public void VisitPlane3(Vector4Data field)
-		{
-			SeekToOffset(field.Offset);
-			field.A = _reader.ReadFloat();
-			field.B = _reader.ReadFloat();
-			field.C = _reader.ReadFloat();
-			field.D = _reader.ReadFloat();
-		}
-
 		public void VisitRect16(RectangleData field)
 		{
 			//they are stored in TLBR order
@@ -450,8 +435,9 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 			field.A = _reader.ReadInt16();
 			field.B = _reader.ReadInt16();
 		}
+		#endregion
 
-		public void VisitTagBlock(TagBlockData field)
+        public void VisitTagBlock(TagBlockData field)
 		{
 			SeekToOffset(field.Offset);
 			StructureValueCollection values = StructureReader.ReadStructure(_reader, _tagBlockLayout);
@@ -512,7 +498,7 @@ namespace Assembly.Metro.Controls.PageTemplates.Games.Components.MetaData
 
 		public void VisitOldStringID(OldStringIDData field)
 		{
-			//we dont care about the string portion
+			//we don't care about the string portion
 			SeekToOffset(field.Offset + 0x1C);
 			field.Value = _cache.StringIDs.GetString(new StringID(_reader.ReadUInt32()));
 		}

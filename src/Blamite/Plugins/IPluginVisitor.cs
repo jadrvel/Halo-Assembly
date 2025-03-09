@@ -56,7 +56,7 @@ namespace Blamite.Plugins
 		void VisitFloat32(string name, uint offset, bool visible, uint pluginLine, string tooltip);
 		void VisitUndefined(string name, uint offset, bool visible, uint pluginLine, string tooltip);
 
-		void VisitDatum(string name, uint offset, bool visible, uint pluginline, string tooltip);
+		void VisitDatum(string name, uint offset, bool visible, uint pluginLine, string tooltip);
 
 		void VisitPoint2(string name, uint offset, bool visible, uint pluginLine, string tooltip);
 		void VisitPoint3(string name, uint offset, bool visible, uint pluginLine, string tooltip);

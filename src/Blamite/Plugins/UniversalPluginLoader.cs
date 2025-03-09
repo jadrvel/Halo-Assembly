@@ -235,7 +235,7 @@ namespace Blamite.Plugins
 
 				case "string":
 				case "ascii":
-					ReadAscii(reader, name, offset, visible, visitor, pluginLine, tooltip);
+					visitor.VisitAscii(name, offset, visible, ReadStringSize(reader), pluginLine, tooltip);
 					break;
 				case "string32":
 					visitor.VisitAscii(name, offset, visible, 32, pluginLine, tooltip);
@@ -249,7 +249,7 @@ namespace Blamite.Plugins
 
 				case "unicode":
 				case "utf16":
-					ReadUtf16(reader, name, offset, visible, visitor, pluginLine, tooltip);
+					visitor.VisitUtf16(name, offset, visible, ReadStringSize(reader), pluginLine, tooltip);
 					break;
 				case "unicode32":
 					visitor.VisitUtf16(name, offset, visible, 32, pluginLine, tooltip);
@@ -262,7 +262,7 @@ namespace Blamite.Plugins
 					break;
 
 				case "hexstring":
-					ReadHexString(reader, name, offset, visible, visitor, pluginLine, tooltip);
+                    visitor.VisitHexString(name, offset, visible, ReadStringSize(reader), pluginLine, tooltip);
 					break;
 
 				case "flags8":
@@ -442,38 +442,13 @@ namespace Blamite.Plugins
 			visitor.VisitTagReference(name, offset, visible, withGroup, pluginLine, tooltip);
 		}
 
-		private static void ReadAscii(XmlReader reader, string name, uint offset, bool visible, IPluginVisitor visitor,
-			uint pluginLine, string tooltip)
+		private static int ReadStringSize(XmlReader reader)
 		{
-			int size = 0;
-
-			if (reader.MoveToAttribute("size") || reader.MoveToAttribute("length"))
-				size = ParseInt(reader.Value);
-
-			visitor.VisitAscii(name, offset, visible, size, pluginLine, tooltip);
-		}
-
-		private static void ReadUtf16(XmlReader reader, string name, uint offset, bool visible, IPluginVisitor visitor,
-			uint pluginLine, string tooltip)
-		{
-			int size = 0;
-
-			if (reader.MoveToAttribute("size") || reader.MoveToAttribute("length"))
-				size = ParseInt(reader.Value);
-
-			visitor.VisitUtf16(name, offset, visible, size, pluginLine, tooltip);
-		}
-
-		private static void ReadHexString(XmlReader reader, string name, uint offset, bool visible, IPluginVisitor visitor,
-			uint pluginLine, string tooltip)
-		{
-			int size = 0;
-
-			if (reader.MoveToAttribute("size") || reader.MoveToAttribute("length"))
-				size = ParseInt(reader.Value);
-
-			visitor.VisitHexString(name, offset, visible, size, pluginLine, tooltip);
-		}
+            int size = 0;
+            if (reader.MoveToAttribute("size") || reader.MoveToAttribute("length"))
+                size = ParseInt(reader.Value);
+            return size;
+        }
 
 		private static void ReadBits(XmlReader reader, IPluginVisitor visitor)
 		{
