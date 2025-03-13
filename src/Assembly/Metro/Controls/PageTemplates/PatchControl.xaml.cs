@@ -523,9 +523,9 @@ namespace Assembly.Metro.Controls.PageTemplates
 						newReader.Dispose();
 				}
 
-				IWriter output = new EndianWriter(File.Open(outputPath, FileMode.Create, FileAccess.Write), Endian.BigEndian);
-				AssemblyPatchWriter.WritePatch(patch, output);
-				output.Dispose();
+				IWriter writer = new EndianWriter(File.Open(outputPath, FileMode.Create, FileAccess.Write), Endian.BigEndian);
+				AssemblyPatchWriter.WritePatch(writer, patch);
+				writer.Dispose();
 
 				MetroMessageBox.Show("Patch Created!",
 					"Your patch has been created in the designated location. Happy sailing, modder!");

@@ -5,220 +5,229 @@ using Blamite.IO;
 
 namespace Blamite.Patching
 {
-	public static class AssemblyPatchWriter
+	public class AssemblyPatchWriter
 	{
-		public static void WritePatch(Patch patch, IWriter writer)
+		private readonly IWriter _writer;
+
+		private readonly ContainerWriter _container;
+
+        public AssemblyPatchWriter(IWriter writer)
+        {
+            _writer = writer;
+			_container = new ContainerWriter(_writer);
+        }
+
+		public static void WritePatch(IWriter writer, Patch patch)
 		{
-			var container = new ContainerWriter(writer);
-			container.StartBlock("asmp", 0);
-			WriteBlocks(patch, container, writer);
-			container.EndBlock();
+			var inst = new AssemblyPatchWriter(writer);
+			inst.WritePatch(patch);
 		}
 
-		private static void WriteBlocks(Patch patch, ContainerWriter container, IWriter writer)
+        public void WritePatch(Patch patch)
 		{
-			WritePatchInfo(patch, container, writer);
-			WriteSegmentChanges(patch, container, writer);
-			WriteBlfInfo(patch, container, writer);
+			_container.StartBlock("asmp", 0);
+
+			WritePatchInfo(patch);
+			WriteSegmentChanges(patch.SegmentChanges);
+			WriteBlfInfo(patch.CustomBlfContent);
 
 			#region Deprecated
 
-			WriteMetaChanges(patch, container, writer);
-			WriteLocaleChanges(patch, container, writer);
+			WriteMetaChanges(patch.MetaChanges);
+			WriteLocaleChanges(patch.LanguageChanges);
 
 			#endregion Deprecated
+
+            _container.EndBlock();
 		}
 
-		private static void WritePatchInfo(Patch patch, ContainerWriter container, IWriter writer)
+		private void WritePatchInfo(Patch patch)
 		{
-			container.StartBlock("titl", 3); // Version 2
+			_container.StartBlock("titl", 3); // Version 2
 
 			// Write target map info
-			writer.WriteInt32(patch.MapID);
+			_writer.WriteInt32(patch.MapID);
 			if (patch.MapInternalName != null)
-				writer.WriteAscii(patch.MapInternalName);
+				_writer.WriteAscii(patch.MapInternalName);
 			else
-				writer.WriteByte(0);
+				_writer.WriteByte(0);
 
 			// Write patch info
-			writer.WriteUTF16(patch.Name);
-			writer.WriteUTF16(patch.Description);
-			writer.WriteUTF16(patch.Author);
+			_writer.WriteUTF16(patch.Name);
+			_writer.WriteUTF16(patch.Description);
+			_writer.WriteUTF16(patch.Author);
 
 			// Write screenshot
 			if (patch.Screenshot != null)
 			{
-				writer.WriteInt32(patch.Screenshot.Length);
-				writer.WriteBlock(patch.Screenshot);
+				_writer.WriteInt32(patch.Screenshot.Length);
+				_writer.WriteBlock(patch.Screenshot);
 			}
 			else
 			{
-				writer.WriteInt32(0);
+				_writer.WriteInt32(0);
 			}
 
 			// Write meta info
-			writer.WriteInt64(patch.MetaPokeBase);
-			writer.WriteSByte((sbyte) patch.MetaChangesIndex);
+			_writer.WriteInt64(patch.MetaPokeBase);
+			_writer.WriteSByte((sbyte)patch.MetaChangesIndex);
 
 			// Write output name
 			if (patch.OutputName != null)
-				writer.WriteAscii(patch.OutputName);
+				_writer.WriteAscii(patch.OutputName);
 			else
-				writer.WriteByte(0);
+				_writer.WriteByte(0);
 
 			// PC?
-			if (patch.PC)
-				writer.WriteByte(1);
-			else
-				writer.WriteByte(0);
+			_writer.WriteByte(patch.PC ? (byte)1 : (byte)0);
 
 			// Write the build string
 			if (patch.BuildString != null)
-				writer.WriteAscii(patch.BuildString);
+				_writer.WriteAscii(patch.BuildString);
 			else
-				writer.WriteByte(0);
+				_writer.WriteByte(0);
 
-			container.EndBlock();
+			_container.EndBlock();
 		}
 
-		private static void WriteSegmentChanges(Patch patch, ContainerWriter container, IWriter writer)
+		private void WriteSegmentChanges(ICollection<SegmentChange> changes)
 		{
-			if (patch.SegmentChanges.Count == 0)
+			if (changes.Count == 0)
 				return;
 
-			container.StartBlock("segm", 0); // Version 0
+			_container.StartBlock("segm", 0); // Version 0
 
-			writer.WriteByte((byte) patch.SegmentChanges.Count);
-			foreach (SegmentChange segment in patch.SegmentChanges)
+			_writer.WriteByte((byte) changes.Count);
+			foreach (var segment in changes)
 			{
-				writer.WriteUInt32(segment.OldOffset);
-				writer.WriteUInt32(segment.OldSize);
-				writer.WriteUInt32(segment.NewOffset);
-				writer.WriteUInt32(segment.NewSize);
-				writer.WriteByte(Convert.ToByte(segment.ResizeAtEnd));
+				_writer.WriteUInt32(segment.OldOffset);
+				_writer.WriteUInt32(segment.OldSize);
+				_writer.WriteUInt32(segment.NewOffset);
+				_writer.WriteUInt32(segment.NewSize);
+				_writer.WriteByte(Convert.ToByte(segment.ResizeAtEnd));
 
-				WriteDataChanges(segment.DataChanges, writer);
+				WriteDataChanges(segment.DataChanges);
 			}
 
-			container.EndBlock();
+			_container.EndBlock();
 		}
 
-		private static void WriteDataChanges(IList<DataChange> changes, IWriter writer)
+        private void WriteDataChanges(ICollection<DataChange> changes)
 		{
-			List<DataChange> fourByteChanges = changes.Where(c => c.Data.Length == 4).ToList();
-			List<DataChange> otherChanges = changes.Where(c => c.Data.Length != 4).ToList();
+			var fourByteChanges = changes.Where(c => c.Data.Length == 4).ToList();
+			var otherChanges = changes.Where(c => c.Data.Length != 4).ToList();
 
 			// Write 4-byte changes
-			writer.WriteUInt32((uint) fourByteChanges.Count);
-			foreach (DataChange change in fourByteChanges)
+			_writer.WriteUInt32((uint) fourByteChanges.Count);
+			foreach (var change in fourByteChanges)
 			{
-				writer.WriteUInt32(change.Offset);
-				writer.WriteBlock(change.Data);
+				_writer.WriteUInt32(change.Offset);
+				_writer.WriteBlock(change.Data);
 			}
 
 			// Write other changes
-			writer.WriteUInt32((uint) otherChanges.Count);
-			foreach (DataChange change in otherChanges)
+			_writer.WriteUInt32((uint) otherChanges.Count);
+			foreach (var change in otherChanges)
 			{
-				writer.WriteUInt32(change.Offset);
-				writer.WriteInt32(change.Data.Length);
-				writer.WriteBlock(change.Data);
+				_writer.WriteUInt32(change.Offset);
+				_writer.WriteInt32(change.Data.Length);
+				_writer.WriteBlock(change.Data);
 			}
 		}
 
-		private static void WriteBlfInfo(Patch patch, ContainerWriter container, IWriter writer)
+		private void WriteBlfInfo(BlfContent blf)
 		{
-			if (patch.CustomBlfContent == null)
+			if (blf == null)
 				return;
 
-			container.StartBlock("blfc", 0); // Version 0
+			_container.StartBlock("blfc", 0); // Version 0
 
-			writer.WriteByte((byte) patch.CustomBlfContent.TargetGame);
+			_writer.WriteByte((byte) blf.TargetGame);
 
 			// Write mapinfo filename
-			if (patch.CustomBlfContent.MapInfoFileName != null)
-				writer.WriteAscii(patch.CustomBlfContent.MapInfoFileName);
+			if (blf.MapInfoFileName != null)
+				_writer.WriteAscii(blf.MapInfoFileName);
 			else
-				writer.WriteByte(0);
+				_writer.WriteByte(0);
 
 			// Write mapinfo data
-			if (patch.CustomBlfContent.MapInfo != null)
+			if (blf.MapInfo != null)
 			{
-				writer.WriteUInt32((uint) patch.CustomBlfContent.MapInfo.Length);
-				writer.WriteBlock(patch.CustomBlfContent.MapInfo);
+				_writer.WriteUInt32((uint) blf.MapInfo.Length);
+				_writer.WriteBlock(blf.MapInfo);
 			}
 			else
 			{
-				writer.WriteUInt32(0);
+				_writer.WriteUInt32(0);
 			}
 
 			// Write BLF containers
-			writer.WriteInt16((short) patch.CustomBlfContent.BlfContainerEntries.Count);
-			foreach (BlfContainerEntry blfContainerEntry in patch.CustomBlfContent.BlfContainerEntries)
+			_writer.WriteInt16((short) blf.BlfContainerEntries.Count);
+			foreach (var blfContainerEntry in blf.BlfContainerEntries)
 			{
-				writer.WriteAscii(blfContainerEntry.FileName);
-				writer.WriteUInt32((uint) blfContainerEntry.BlfContainer.Length);
-				writer.WriteBlock(blfContainerEntry.BlfContainer);
+				_writer.WriteAscii(blfContainerEntry.FileName);
+				_writer.WriteUInt32((uint) blfContainerEntry.BlfContainer.Length);
+				_writer.WriteBlock(blfContainerEntry.BlfContainer);
 			}
 
-			container.EndBlock();
+			_container.EndBlock();
 		}
 
 		#region Deprecated
 
-		private static void WriteMetaChanges(Patch patch, ContainerWriter container, IWriter writer)
+		private void WriteMetaChanges(ICollection<DataChange> metaChanges)
 		{
-			if (patch.MetaChanges.Count == 0)
+			if (metaChanges.Count == 0)
 				return;
 
-			container.StartBlock("meta", 0); // Version 0
+			_container.StartBlock("meta", 0); // Version 0
 
-			List<DataChange> fourByteChanges = patch.MetaChanges.Where(c => c.Data.Length == 4).ToList();
-			List<DataChange> otherChanges = patch.MetaChanges.Where(c => c.Data.Length != 4).ToList();
+			var fourByteChanges = metaChanges.Where(c => c.Data.Length == 4).ToList();
+			var otherChanges = metaChanges.Where(c => c.Data.Length != 4).ToList();
 
 			// Write 4-byte changes
-			writer.WriteUInt32((uint) fourByteChanges.Count);
-			foreach (DataChange change in fourByteChanges)
+			_writer.WriteUInt32((uint) fourByteChanges.Count);
+			foreach (var change in fourByteChanges)
 			{
-				writer.WriteUInt32(change.Offset);
-				writer.WriteBlock(change.Data);
+				_writer.WriteUInt32(change.Offset);
+				_writer.WriteBlock(change.Data);
 			}
 
 			// Write other changes
-			writer.WriteUInt32((uint) otherChanges.Count);
-			foreach (DataChange change in otherChanges)
+			_writer.WriteUInt32((uint) otherChanges.Count);
+			foreach (var change in otherChanges)
 			{
-				writer.WriteUInt32(change.Offset);
-				writer.WriteInt32(change.Data.Length);
-				writer.WriteBlock(change.Data);
+				_writer.WriteUInt32(change.Offset);
+				_writer.WriteInt32(change.Data.Length);
+				_writer.WriteBlock(change.Data);
 			}
 
-			container.EndBlock();
+			_container.EndBlock();
 		}
 
-		private static void WriteLocaleChanges(Patch patch, ContainerWriter container, IWriter writer)
+		private void WriteLocaleChanges(ICollection<LanguageChange> langChanges)
 		{
-			if (patch.LanguageChanges.Count == 0)
+			if (langChanges.Count == 0)
 				return;
 
-			container.StartBlock("locl", 0); // Version 0
+			_container.StartBlock("locl", 0); // Version 0
 
 			// Write change data for each language
-			writer.WriteByte((byte) patch.LanguageChanges.Count);
-			foreach (LanguageChange language in patch.LanguageChanges)
+			_writer.WriteByte((byte) langChanges.Count);
+			foreach (var language in langChanges)
 			{
-				writer.WriteByte(language.LanguageIndex);
+				_writer.WriteByte(language.LanguageIndex);
 
 				// Write the change data for each string in the language
-				writer.WriteInt32(language.LocaleChanges.Count);
-				foreach (LocaleChange change in language.LocaleChanges)
+				_writer.WriteInt32(language.LocaleChanges.Count);
+				foreach (var change in language.LocaleChanges)
 				{
-					writer.WriteInt32(change.Index);
-					writer.WriteUTF8(change.NewValue);
+					_writer.WriteInt32(change.Index);
+					_writer.WriteUTF8(change.NewValue);
 				}
 			}
 
-			container.EndBlock();
+			_container.EndBlock();
 		}
 
 		#endregion Deprecated
