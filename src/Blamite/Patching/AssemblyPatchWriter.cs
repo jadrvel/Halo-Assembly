@@ -23,6 +23,12 @@ namespace Blamite.Patching
 			inst.WritePatch(patch);
 		}
 
+		public static void WritePatch(IWriter writer, TagPatch patch)
+		{
+			var inst = new AssemblyPatchWriter(writer);
+			inst.WritePatch(patch);
+		}
+
         public void WritePatch(Patch patch)
 		{
 			_container.StartBlock("asmp", 0);
@@ -41,7 +47,17 @@ namespace Blamite.Patching
             _container.EndBlock();
 		}
 
-		private void WritePatchInfo(Patch patch)
+		public void WritePatch(TagPatch patch)
+		{
+			_container.StartBlock("asmt", 0);
+
+			WritePatchInfo(patch);
+			WriteTagChanges(patch.TagChanges);
+
+            _container.EndBlock();
+		}
+
+		private void WritePatchInfo(PatchInfo patch)
 		{
 			_container.StartBlock("titl", 3); // Version 2
 
@@ -69,8 +85,11 @@ namespace Blamite.Patching
 			}
 
 			// Write meta info
-			_writer.WriteInt64(patch.MetaPokeBase);
-			_writer.WriteSByte((sbyte)patch.MetaChangesIndex);
+			if (patch is Patch p)
+			{
+				_writer.WriteInt64(p.MetaPokeBase);
+				_writer.WriteSByte((sbyte)p.MetaChangesIndex);
+            }
 
 			// Write output name
 			if (patch.OutputName != null)
@@ -111,6 +130,55 @@ namespace Blamite.Patching
 
 			_container.EndBlock();
 		}
+
+		private void WriteTagChanges(ICollection<TagChange> changes)
+		{
+			if (changes.Count == 0)
+				return;
+
+			_container.StartBlock("tags", 0);
+
+			_writer.WriteUInt32((uint)changes.Count);
+			foreach (var tag in changes)
+			{
+				_writer.WriteInt32(tag.Group);
+				_writer.WriteUTF16(tag.Name);
+				WriteBlockChange(tag);
+			}
+
+			_container.EndBlock();
+		}
+
+		private void WriteBlockChange(BlockChange block)
+		{
+			_writer.WriteUInt32(block.BaseSize);
+
+			var flag = block.ChangeFlag;
+            _writer.WriteByte((byte)flag);
+
+			if (flag.HasFlag(BlockChangeFlag.TopLevel))
+				WriteDataChanges(block.Changes);
+
+			if (flag.HasFlag(BlockChangeFlag.DataRef))
+			{
+				_writer.WriteUInt32((uint)block.DataRefChanges.Count);
+				foreach (var pair in block.DataRefChanges)
+				{
+					_writer.WriteUInt32(pair.Key);
+					WriteDataChanges(pair.Value);
+				}
+            }
+
+			if (flag.HasFlag(BlockChangeFlag.TagBlock)) 
+			{
+				_writer.WriteUInt32((uint)block.TagBlockChanges.Count);
+				foreach (var pair in block.TagBlockChanges)
+				{
+					_writer.WriteUInt32(pair.Key);
+					WriteBlockChange(pair.Value);
+				}
+            }
+        }
 
         private void WriteDataChanges(ICollection<DataChange> changes)
 		{

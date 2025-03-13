@@ -596,7 +596,7 @@ namespace Assembly.Metro.Controls.PageTemplates
 					{
 						// Load into UI
 						reader.Endianness = Endian.BigEndian;
-						currentPatch = AssemblyPatchLoader.LoadPatch(reader);
+						AssemblyPatchLoader.LoadPatch(reader, out currentPatch);
 						txtApplyPatchAuthor.Text = currentPatch.Author;
 						txtApplyPatchDesc.Text = currentPatch.Description;
 						txtApplyPatchName.Text = currentPatch.Name;
@@ -990,7 +990,7 @@ namespace Assembly.Metro.Controls.PageTemplates
 					{
 						// Load into UI
 						reader.Endianness = Endian.BigEndian;
-						currentPatchToPoke = AssemblyPatchLoader.LoadPatch(reader);
+						AssemblyPatchLoader.LoadPatch(reader, out currentPatchToPoke);
 						txtPokePatchAuthor.Text = currentPatchToPoke.Author;
 						txtPokePatchDesc.Text = currentPatchToPoke.Description;
 						txtPokePatchName.Text = currentPatchToPoke.Name;

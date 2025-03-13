@@ -15,13 +15,19 @@ namespace Blamite.Patching
             _reader = reader;
         }
 
-		public static Patch LoadPatch(IReader reader)
+		public static void LoadPatch(IReader reader, out Patch patch)
 		{
 			var inst = new AssemblyPatchLoader(reader);
-			return inst.LoadPatch();
+			inst.LoadPatch(out patch);
 		}
 
-        public Patch LoadPatch()
+		public static void LoadPatch(IReader reader, out TagPatch patch)
+		{
+			var inst = new AssemblyPatchLoader(reader);
+			inst.LoadPatch(out patch);
+		}
+
+        public void LoadPatch(out Patch patch)
 		{
 			var container = new ContainerReader(_reader);
 			if (!container.NextBlock() || container.BlockName != "asmp")
@@ -30,16 +36,27 @@ namespace Blamite.Patching
 				throw new InvalidOperationException("Unrecognized patch version");
 
 			container.EnterBlock();
-			var patch = ReadBlocks(container);
-			container.LeaveBlock();
-
-			return patch;
+			ReadBlocks(container, out patch);
+            container.LeaveBlock();
 		}
 
-		private Patch ReadBlocks(ContainerReader container)
+		public void LoadPatch(out TagPatch patch)
 		{
-			var result = new Patch();
-			while (container.NextBlock())
+			var container = new ContainerReader(_reader);
+			if (!container.NextBlock() || container.BlockName != "asmt")
+				throw new InvalidOperationException("Invalid assembly patch");
+			if (container.BlockVersion > 0)
+				throw new InvalidOperationException("Unrecognized patch version");
+
+			container.EnterBlock();
+			ReadBlocks(container, out patch);
+			container.LeaveBlock();
+		}
+
+        private void ReadBlocks(ContainerReader container, out Patch result)
+		{
+            result = new Patch();
+            while (container.NextBlock())
 			{
 				var version = container.BlockVersion;
                 switch (container.BlockName)
@@ -69,10 +86,28 @@ namespace Blamite.Patching
 					#endregion Deprecated
 				}
 			}
-			return result;
 		}
 
-		private void ReadPatchInfo(byte version, Patch output)
+		private void ReadBlocks(ContainerReader container, out TagPatch result)
+		{
+			result = new TagPatch();
+			while (container.NextBlock())
+			{
+				var version = container.BlockVersion;
+				switch (container.BlockName)
+				{
+					case "titl":
+						ReadPatchInfo(version, result);
+						break;
+
+					case "tags":
+						result.TagChanges = ReadTagChanges(version).ToList();
+						break;
+				}
+			}
+		}
+
+        private void ReadPatchInfo(byte version, PatchInfo output)
 		{
 			if (version > 3)
 				throw new NotSupportedException("Unrecognized \"titl\" block version");
@@ -89,9 +124,9 @@ namespace Blamite.Patching
 				output.Screenshot = _reader.ReadBlock(screenshotLength);
 
 			// Version 1
-			if (version >= 1) {
-				output.MetaPokeBase = version >= 3 ? _reader.ReadInt64() : _reader.ReadUInt32();
-				output.MetaChangesIndex = _reader.ReadSByte();
+			if (version >= 1 && output is Patch p) {
+				p.MetaPokeBase = version >= 3 ? _reader.ReadInt64() : _reader.ReadUInt32();
+				p.MetaChangesIndex = _reader.ReadSByte();
 			}
 
 			// Version 2
@@ -128,7 +163,55 @@ namespace Blamite.Patching
 			}
 		}
 
-		private IEnumerable<DataChange> ReadDataChanges()
+		private IEnumerable<TagChange> ReadTagChanges(byte version)
+		{
+			if (version > 0)
+				throw new NotSupportedException("Unrecognized \"tags\" block version");
+
+			var numChanges = _reader.ReadUInt32();
+			for (int i = 0; i < numChanges; i++)
+			{
+				var group = _reader.ReadInt32();
+                var name = _reader.ReadUTF16();
+				var tagChange = new TagChange(name, group, 0);
+				ReadBlockChange(tagChange);
+
+                yield return tagChange;
+			}
+		}
+
+		private void ReadBlockChange(BlockChange block)
+		{
+			block.BaseSize = _reader.ReadUInt32();
+			var flag = (BlockChangeFlag)_reader.ReadByte();
+
+			if (flag.HasFlag(BlockChangeFlag.TopLevel))
+				block.Changes = ReadDataChanges().ToList();
+
+			if (flag.HasFlag(BlockChangeFlag.DataRef))
+			{
+				var count = _reader.ReadUInt32();
+                for (int i = 0; i < count; i++)
+                {
+                    var offset = _reader.ReadUInt32();
+                    block.DataRefChanges[offset] = ReadDataChanges().ToList();
+                }
+            }
+
+			if (flag.HasFlag(BlockChangeFlag.TagBlock))
+			{
+				var count = _reader.ReadUInt32();
+                for (int i = 0; i < count; i++)
+                {
+                    var offset = _reader.ReadUInt32();
+                    var blockChange = new BlockChange(0);
+                    ReadBlockChange(blockChange);
+                    block.TagBlockChanges[offset] = blockChange;
+                }
+            }
+        }
+
+        private IEnumerable<DataChange> ReadDataChanges()
 		{
 			uint numFourByteChanges = _reader.ReadUInt32();
 			for (int j = 0; j < numFourByteChanges; j++)
