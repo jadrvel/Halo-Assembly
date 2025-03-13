@@ -46,7 +46,7 @@ namespace Blamite.Blam
 		/// <summary>
 		///     Gets the number of strings in the table.
 		/// </summary>
-		public int Count
+		public override int Count
 		{
 			get { return _strings.Count; }
 		}

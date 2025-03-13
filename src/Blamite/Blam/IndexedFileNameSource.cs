@@ -16,7 +16,7 @@ namespace Blamite.Blam
 			_strings = strings;
 		}
 
-		public int Count
+		public override int Count
 		{
 			get { return _strings.Count; }
 		}
