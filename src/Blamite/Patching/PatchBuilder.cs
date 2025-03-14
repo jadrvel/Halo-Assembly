@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Blamite.Blam;
 using Blamite.IO;
 
@@ -20,8 +21,12 @@ namespace Blamite.Patching
 			output.MapInternalName = originalFile.InternalName;
 			output.MetaPokeBase = newFile.MetaArea.BasePointer;
 
-			List<SegmentChange> segmentChanges = SegmentComparer.CompareSegments(originalFile.Segments, originalReader,
-				newFile.Segments, newReader);
+			var segmentChanges = SegmentComparer.CompareSegments(
+				originalFile.Segments.ToList(), 
+				originalReader,
+				newFile.Segments.ToList(), 
+				newReader
+			).ToList();
 			output.SegmentChanges.AddRange(segmentChanges);
 			output.MetaChangesIndex = FindMetaChanges(segmentChanges, newFile);
 		}

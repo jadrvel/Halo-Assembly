@@ -15,32 +15,41 @@ namespace Blamite.Patching
 		/// <param name="newSegments">The modified set of file segments.</param>
 		/// <param name="newReader">The stream to use to read from the modified file.</param>
 		/// <returns>The differences that were found.</returns>
-		public static List<SegmentChange> CompareSegments(IEnumerable<FileSegment> originalSegments, IReader originalReader,
-			IEnumerable<FileSegment> newSegments, IReader newReader)
-		{
-			List<FileSegment> originalList = originalSegments.ToList();
-			List<FileSegment> newList = newSegments.ToList();
-
-			if (originalList.Count != newList.Count)
+		public static IEnumerable<SegmentChange> CompareSegments(
+			IList<FileSegment> originalSegments, 
+			IReader originalReader,
+			IList<FileSegment> newSegments, 
+			IReader newReader
+		) {
+			if (originalSegments.Count != newSegments.Count)
 				throw new InvalidOperationException("The files have different segment counts");
 
-			var results = new List<SegmentChange>();
-			for (int i = 0; i < originalList.Count; i++)
+			for (int i = 0; i < originalSegments.Count; i++)
 			{
-				FileSegment originalSegment = originalList[i];
-				FileSegment newSegment = newList[i];
-				List<DataChange> changes = DataComparer.CompareData(originalReader, (uint) originalSegment.Offset,
-					originalSegment.ActualSize, newReader, (uint) newSegment.Offset, newSegment.ActualSize,
-					originalSegment.ResizeOrigin != SegmentResizeOrigin.Beginning);
+				var originalSegment = originalSegments[i];
+				var newSegment = newSegments[i];
+				var changes = DataComparer.CompareData(
+					originalReader,
+					originalSegment.Offset,
+					originalSegment.ActualSize,
+					newReader,
+					newSegment.Offset,
+					newSegment.ActualSize,
+					originalSegment.ResizeOrigin != SegmentResizeOrigin.Beginning
+				).ToList();
 				if (changes.Count > 0 || originalSegment.Size != newSegment.Size)
 				{
-					var change = new SegmentChange((uint) originalSegment.Offset, originalSegment.ActualSize, (uint) newSegment.Offset,
-						newSegment.ActualSize, originalSegment.ResizeOrigin != SegmentResizeOrigin.Beginning);
+					var change = new SegmentChange(
+						originalSegment.Offset, 
+						originalSegment.ActualSize, 
+						newSegment.Offset,
+						newSegment.ActualSize, 
+						originalSegment.ResizeOrigin != SegmentResizeOrigin.Beginning
+					);
 					change.DataChanges.AddRange(changes);
-					results.Add(change);
+					yield return change;
 				}
 			}
-			return results;
 		}
 	}
 }

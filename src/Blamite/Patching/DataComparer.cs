@@ -4,32 +4,37 @@ using Blamite.IO;
 
 namespace Blamite.Patching
 {
-	public static class DataComparer
+	public static class DataComparer 
 	{
-		/// <summary>
-		///     Compares parts of two streams.
-		/// </summary>
-		/// <param name="originalReader">The stream open on the original file.</param>
-		/// <param name="originalOffset">The start offset of the data to compare in the original file.</param>
-		/// <param name="originalSize">The size of the data to compare in the original file.</param>
-		/// <param name="newReader">The stream open on the modified file.</param>
-		/// <param name="newOffset">The start offset of the data to compare in the modified file.</param>
-		/// <param name="newSize">The size of the data to compare in the modified file.</param>
-		/// <param name="extraDataAtEnd">
-		///     true if extra data in the modified file will be found at the end of the area to compare,
-		///     or false if it will be found at the beginning.
-		/// </param>
-		/// <returns>The differences between the two parts of the files.</returns>
-		public static List<DataChange> CompareData(IReader originalReader, uint originalOffset, uint originalSize,
-			IReader newReader, uint newOffset, uint newSize, bool extraDataAtEnd)
-		{
-			var results = new List<DataChange>();
+		private const int BufferSize = 0x1000;
 
-			const int BufferSize = 0x1000;
+        /// <summary>
+        ///     Compares parts of two streams.
+        /// </summary>
+        /// <param name="originalReader">The stream open on the original file.</param>
+        /// <param name="originalOffset">The start offset of the data to compare in the original file.</param>
+        /// <param name="originalSize">The size of the data to compare in the original file.</param>
+        /// <param name="newReader">The stream open on the modified file.</param>
+        /// <param name="newOffset">The start offset of the data to compare in the modified file.</param>
+        /// <param name="newSize">The size of the data to compare in the modified file.</param>
+        /// <param name="extraDataAtEnd">
+        ///     <see langword="true" /> if extra data in the modified file will be found at the end of the area to compare,
+		///     or <see langword="false" /> if it will be found at the beginning.
+        /// </param>
+        /// <returns>The differences between the two parts of the files.</returns>
+        public static IEnumerable<DataChange> CompareData(
+			IReader originalReader, 
+			uint originalOffset, 
+			uint originalSize,
+			IReader newReader, 
+			uint newOffset, 
+			uint newSize, 
+			bool extraDataAtEnd = true
+		) {
 			var oldBuffer = new byte[BufferSize];
 			var newBuffer = new byte[BufferSize];
 
-			uint sizeDiff = newSize - originalSize;
+			var sizeDiff = (int)newSize - (int)originalSize;
 			if (sizeDiff < 0)
 				throw new NotSupportedException("Comparing shrunk segments is not supported yet");
 
@@ -42,8 +47,8 @@ namespace Blamite.Patching
 					newReader.SeekTo(newOffset);
 
 				var offset = (uint) (newReader.Position - newOffset);
-				byte[] data = newReader.ReadBlock((int)sizeDiff);
-				results.Add(new DataChange(offset, data));
+				byte[] data = newReader.ReadBlock(sizeDiff);
+				yield return new DataChange(offset, data);
 			}
 
 			// Now handle differences
@@ -82,22 +87,20 @@ namespace Blamite.Patching
 					else if (diffSize > 0)
 					{
 						// Found a complete difference region - build data for the change and add it
-						results.Add(BuildChange(newBuffer, diffStartIndex, diffOffset, diffSize));
+						yield return BuildChange(newBuffer, diffStartIndex, diffOffset, diffSize);
 						diffSize = 0;
 					}
 				}
 
 				// Handle differences at the end of the buffer
 				if (diffSize > 0)
-					results.Add(BuildChange(newBuffer, diffStartIndex, diffOffset, diffSize));
+					yield return BuildChange(newBuffer, diffStartIndex, diffOffset, diffSize);
 
 				// Advance to the next block
 				bufferOffset += (uint) bufferLength;
 				originalOffset += (uint) oldBuffer.Length;
 				newOffset += (uint) newBuffer.Length;
 			}
-
-			return results;
 		}
 
 		private static DataChange BuildChange(byte[] diffBuffer, int diffStartIndex, uint diffOffset, int diffSize)
